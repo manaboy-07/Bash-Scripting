@@ -1,0 +1,14 @@
+This is imprtant for cloud 
+
+bash scripting begins.
+
+1. Always change mode to executable for the file
+e.g chmod +x script.sh
+
+
+how to run a script
+./{name of script}
+e.g ./script.
+
+Commands run sequentially
+
