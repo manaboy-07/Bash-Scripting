@@ -12,3 +12,138 @@ e.g ./script.
 
 Commands run sequentially
 
+
+
+SSH is basically ssh user@ipadreess or ssh username@dnsname
+as long as the openshh client is installed and runs on a pc.
+
+You can configure the open ssh client as well 
+so in your root or where  your .ssh is , if you create a config file inside and do something like
+ Host myserver
+  Hostname test.rebex.net
+  Port 22
+  User demo
+  
+   then th ssh will automatically koad cifig files in the sysyem
+  then when youre insise .ssh or noy idk just do ssh myserver
+
+so the advantage is that you can have more than one server at a time, e.g you can have anther Host Server2
+
+Host [servername]
+   Hostname [ipaddr or dns]
+   port 22
+   user username
+
+Lesson 2 Creating SSH key   
+using public/private key
+ssh is aminly for security reasons
+ssh keys allow us not to use passwords , password must not be easy to guess, avoid typing passwords
+
+in the home directory you can create ssh-key, we will learn how to disable passweord auth
+
+ssh-keygen generate a brand new key and will ask where to save the file
+enter a passphrase
+it will create your publick key and private .
+
+It doesnt matter who sees your .pub
+but never show your private key , you cant trus it and you must remove it.
+
+Setup sever to auth and bypass the password.
+cat the ssh key created .the public one that is
+
+WHen you enter the server, setup the connection , enter the sssh directoryif none create one
+nano authorized_keys
+paste the public key
+you can have multiple public keys. each on ther own file.
+you can exit server2. 
+back in server1 if you try to connect it , it will take you automatically
+so above is actually the hard way of doing it.
+
+Here is the easier way to cooonect keys and do automatic logins.
+
+using the command , ssh-copy-id -i ~/.ssh/id_rsa.pub root@ip
+it is used to copy ssh keys to remote servers
+-i : is the input file
+path to the public key
+
+you can check the remote server and cat the authorized_keys.
+
+Lesson 3. Configure ssh compoenent and disable password auth esp if we are using keys.
+Key management
+
+To  check the ssh keys you have 
+enter .ssh and then ls -learn
+have a separate key for a client is a good idea but be careful if you have a lot of keys
+
+Scenario: lets say assting with a client server geenerate a key specific and use for them.
+this time we create a key with  adifferent type
+c: ssh-keygen -t ed25519 -C "acme"//this type is more secure and public key is less
+it will rompt a name for file 
+/home/jay/.ssh/acme_id_ed25519 basically a name on the remote server
+
+enter a passpharase
+so now we have the key how do we differentiate what key we want to use. e.geeneratec: ssh -i ~/.ssh/aceme_id?ed25519 root@ip 
+press enter . it will ask for you passphrase.
+
+Using ssh agent to cache the key. 
+1. ps aux | grep ssh-agent
+
+2. eval "$(ssh-sgent) press enter
+run the ps aux again
+this shows ssh-agent is running
+cachthe key to 
+ssh-add ~/.ssh/acme_id_ed25519
+press enter put in passphrase
+now ssh into the sever you wont be asked for passphrase again.
+
+So so far we have been studying ssh client.
+
+Lesson4. Configureing OpenSSH.
+SSH server compoentn shd be running.
+you must be on your remote server
+c: systemctl status sshd.
+it must be running if we wnated to connect to it fromour client.
+on the remote server, 
+if you cd /etc/ssh
+ls -l ,
+you see a lot of files like ssh host keys those keys are used for finger print
+you don't want to delete them.  
+you dont want the same host keys on all of your servers, say like you want to clone cause of ipaddress and it will think there is a man in the middle attack
+so in the etc look at the you must be logged as rot btw or use sudo command
+sshd config
+
+- here you can change the the port uncomment it 
+-PermutRootLogin , shd be set to no if you have other users you cna login with via ssh outside of root.
+No is preffered cause of hackers.
+
+Scoll a bit down and then do 
+PasswordAuthentication to No. Now you shd only do this to no if you have ssh key already set up. save the file
+restart sshd service ,.
+
+Open a new terminal tho to test it attach  -p flag if you chaged the port , all those configs were done on the remote server
+
+Best Practice: because of security , you can temp move ssh, mv .ssh .ssh-back
+logout of your computer and login anto make sure any instance of it is not longer in memory
+so now we moved the ssh.
+if we try to connect to the 
+ssh -p 2222 root@ipaddr
+you will get an error and because you tried using ssh command.
+it willl create a new ssh folder for you.
+you can remove it,
+rm -r .ssh
+then you can mv bakup to its original name
+mv .ssh-bak/ .ssh
+
+try it agai now it will work, create a key and disable password auth on all linux servers,
+ 
+Lesson 5: TroubleShooting OpenSSH.
+1. check the network layer ,openshh client must be installed . your isp shdnt have port 22 blocked.
+ remote server must allow traffic on port 22
+ 2. invald persmision, ls -la | grep .ssh
+   make sure the .ssh and authirize keys file are editable and readbe by you.
+    3. Check logs - on the remot server, cd /var/log
+   tail -f auth.log , if there is a problem you will see it here .
+
+   the new way to do is using journalctl.
+   c: journalctl -u ssh , or sshd in some distribution, you can folow by
+   journalctl -fu ssh , 
