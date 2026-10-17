@@ -13,6 +13,9 @@ e.g ./script.
 Commands run sequentially
 
 
+INTRODUCTION TO SSH.
+
+
 
 SSH is basically ssh user@ipadreess or ssh username@dnsname
 as long as the openshh client is installed and runs on a pc.
